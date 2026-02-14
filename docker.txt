@@ -1,0 +1,40 @@
+docker version
+docker info
+docker build -f src/School.Api/Dockerfile -t school-api:1.0 .
+docker images
+docker images --format "{{.Repository}}:{{.Tag}}"
+docker inspect school-api:1.0
+
+docker run -d -p 8080:8080 --name school-api-test school-api:1.0
+
+docker ps
+docker ps -a
+docker ps --format "{{.Names}}"
+
+docker logs school-api-test
+docker logs -f school-api-test
+
+docker exec -it school-api-test bash
+
+docker stop school-api-test
+docker start school-api-test
+docker restart school-api-test
+
+docker tag school-api:1.0 schoolacr2026.azurecr.io/schoolapi:1.0
+
+az acr login --name schoolacr2026
+docker push schoolacr2026.azurecr.io/schoolapi:1.0
+
+docker rmi school-api:1.0
+docker pull schoolacr2026.azurecr.io/schoolapi:1.0
+
+docker save school-api:1.0 -o school-api.tar
+
+docker rmi school-api:1.0
+
+docker load -i school-api.tar
+
+docker stop school-api-test
+docker rm school-api-test
+docker image prune
+docker system prune

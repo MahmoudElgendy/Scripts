@@ -50,3 +50,5 @@ az sql db create --resource-group $RESOURCE_GROUP --name $SQL_DB --server $SQL_S
 
 # Restart
 az webapp restart --resource-group $RESOURCE_GROUP --name $WEB_APP_NAME
+
+## don't forget to enable managed identity for the web app and assign AcrPull role to it, otherwise the web app won't be able to pull the image from ACR and will keep crashing with 401 error, you can run below commands to do that if you missed it in the script

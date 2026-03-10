@@ -65,7 +65,7 @@ $KV_ID=$(az keyvault show -g $RESOURCE_GROUP -n $KEYVAULT_NAME --query id -o tsv
 az role assignment create --assignee-object-id $WEBAPP_ID --assignee-principal-type ServicePrincipal --role "Key Vault Secrets User" --scope $KV_ID
 
 # don't forget to set the value of the connection string in Key Vault as a secret, otherwise the web app won't be able to connect to the database and will keep crashing, you can run below commands to do that if you missed it in the script
-$SQL_CONNECTION_STRING="Server=tcp:${SQL_SERVER}.database.windows.net,1433;Initial Catalog=${SQL_DB};User ID=${SQL_ADMIN};Password=${SQL_PASSWORD};Encrypt=True"
+$SQL_CONNECTION_STRING="Server=tcp:${SQL_SERVER}.database.windows.net,1433;Initial Catalog=${SQL_DB};User ID=${SQL_ADMIN};Password=${SQL_PASSWORD};Encrypt=True;TrustServerCertificate=false;"
 az keyvault secret set --vault-name $KEYVAULT_NAME --name "ConnectionStrings--DefaultConnection" --value "$SQL_CONNECTION_STRING"
 
 # Restart

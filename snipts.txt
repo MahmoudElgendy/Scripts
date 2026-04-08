@@ -9,3 +9,11 @@ foreach ($folder in $folders) {
     New-Item -Path $folder -Name "test.txt" -ItemType File -Force
 }
 
+
+or 
+
+@(".\homeservice\homeservice.data", ".\accountservice\accountservice.data") |
+ForEach-Object {
+    New-Item -Path $_ -Name "test.txt" -ItemType File -Force
+}
+

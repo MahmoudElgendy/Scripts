@@ -1,0 +1,11 @@
+creat file in multible pathes at the same time
+
+$folders = @(
+    ".\homeservice\homeservice.data",
+    ".\accountservice\accountservice.data"
+)
+
+foreach ($folder in $folders) {
+    New-Item -Path $folder -Name "test.txt" -ItemType File -Force
+}
+

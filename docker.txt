@@ -38,3 +38,9 @@ docker stop school-api-test
 docker rm school-api-test
 docker image prune
 docker system prune
+====================================================
+remove all (containers - images - volumns - builds)
+docker rm -f $(docker ps -aq)
+docker rmi -f $(docker images -aq)
+docker volume rm $(docker volume ls -q)
+docker builder prune -a -f

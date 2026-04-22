@@ -7,6 +7,8 @@
 
     FunctionsToExport = @(
         'Add',
-        'Greet'
+        'Greet',
+        'Sync-Folder',
+        'Log-Info'
     )
 }

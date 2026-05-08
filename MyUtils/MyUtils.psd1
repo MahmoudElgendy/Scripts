@@ -9,6 +9,8 @@
         'Add',
         'Greet',
         'Sync-Folder',
-        'Log-Info'
+        'Log-Info',
+        'Create-ACR'
+        'Delete-RGS'
     )
 }

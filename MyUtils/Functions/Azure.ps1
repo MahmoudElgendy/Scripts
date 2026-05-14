@@ -20,5 +20,15 @@ function Delete-RGS {
         Write-Host "Deleting Resource Group: $_" -ForegroundColor Red
         az group delete --name $_ --yes --no-wait
     }
+}
 
+function Tag-Iamges {
+    docker tag shoppingapi:latest shoppingacr2026.azurecr.io/shoppingapi:1.0
+    docker tag shoppingclient:latest shoppingacr2026.azurecr.io/shoppingclient:1.0
+
+}
+
+function Push-Images {
+    docker push shoppingacr2026.azurecr.io/shoppingapi:1.0
+    docker push shoppingacr2026.azurecr.io/shoppingclient:1.0
 }

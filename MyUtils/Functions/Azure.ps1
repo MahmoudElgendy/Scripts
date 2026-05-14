@@ -2,10 +2,7 @@ function Create-ACR {
     $RESOURCE_GROUP = "shopping-rg"
     $LOCATION = "centralus"
 
-
-
     $ACR_NAME = "shoppingacr2026"
-
 
     # Create Resource Group
     az group create --name $RESOURCE_GROUP --location $LOCATION

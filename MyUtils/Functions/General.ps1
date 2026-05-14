@@ -14,3 +14,15 @@ function Sync-Folder {
 
     Copy-Item $source $TargetParent -Recurse
 }
+
+function Sync-Module {
+    param(
+        [string]$FolderName
+    )
+    $target = ($env:PSModulePath -split ";")[0]
+    $source = (Get-Location).Path
+    sync-folder -targetparent  $target -sourceparent $source -foldername $FolderName
+}
+function Sync-MyUtils {
+     Sync-Module -foldername "MyUtils"
+}

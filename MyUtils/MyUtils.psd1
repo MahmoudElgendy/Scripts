@@ -9,6 +9,8 @@
         'Add',
         'Greet',
         'Sync-Folder',
+        'Sync-Module',
+        'Sync-MyUtils',
         'Log-Info',
         'Create-ACR'
         'Delete-RGS'

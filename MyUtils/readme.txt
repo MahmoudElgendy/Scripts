@@ -9,3 +9,12 @@ c:\program files\powershell\7\Modules
 C:\Program Files\WindowsPowerShell\Modules
 C:\Windows\system32\WindowsPowerShell\v1.0\Modules
 PS C:\Users\MahmoudElgendi>
+
+
+$target = ($env:PSModulePath -split ";")[0]
+$source = (Get-Location).Path
+sync-folder -targetparent  $target -sourceparent $source -foldername "MyUtils"
+
+sync-modul -foldername "MyUtils"
+
+sync-MyUtils

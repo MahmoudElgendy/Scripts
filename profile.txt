@@ -1,0 +1,383 @@
+function apps {
+    Set-Location 'C:\Users\MahmoudElgendi\GitHub\MiPlatform\apps'
+}
+function search {
+    Set-Location 'C:\Users\MahmoudElgendi\GitHub\MiPlatform\apps'
+    code .
+}
+
+function azure {
+    Set-Location 'C:\Users\MahmoudElgendi\azure'
+}
+
+function descktop {
+    Set-Location 'C:\Users\MahmoudElgendi\OneDrive - MiView Integrated Solutions, LLC\Desktop'
+}
+function local-setup {
+    Set-Location 'C:\Users\MahmoudElgendi\GitHub\MiPlatform\local-setup'
+}
+
+$MiRoot = "C:\Users\MahmoudElgendi"
+
+function cdroot {
+    param (
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    Set-Location (Join-Path $MiRoot $Path)
+}
+
+function docker_cleanup{
+docker rm -f $(docker ps -aq)
+docker rmi -f $(docker images -q)
+docker volume prune -f
+docker network prune -f
+docker system prune -a
+docker builder prune -f
+}
+
+function db_drop{
+dotnet ef database drop -f
+}
+function db_update{
+dotnet ef database update
+}
+
+function myclass{
+# Step 1: Create solution and projects
+mkdir MyClass
+cd MyClass
+dotnet new sln -n MyClass
+dotnet new webapi -n MyClass.Api --use-controller
+dotnet sln add MyClass.Api/MyClass.Api.csproj
+dotnet new xunit -n MyClass.Tests
+dotnet sln add MyClass.Tests/MyClass.Tests.csproj
+dotnet add MyClass.Tests/MyClass.Tests.csproj reference MyClass.Api/MyClass.Api.csproj
+
+# Step 2: Add EF Core packages
+dotnet add Demo.Tests package Microsoft.EntityFrameworkCore.InMemory
+dotnet add Demo.Api package Microsoft.EntityFrameworkCore
+dotnet add Demo.Api package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add Demo.Api package Microsoft.EntityFrameworkCore.Tools
+
+# Step 3: Create folders in MyClass.Api
+mkdir MyClass.Api\Controllers
+mkdir MyClass.Api\Models
+mkdir MyClass.Api\Data
+
+# Step 4: Create ApplicationDbContext.cs
+Set-Content -Path "MyClass.Api\Data\ApplicationDbContext.cs" -Value @"
+using Microsoft.EntityFrameworkCore;
+using MyClass.Api.Models;
+
+namespace MyClass.Api.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        public DbSet<TemplateModel> TemplateModels => Set<TemplateModel>();
+    }
+}
+"@
+
+# Step 5: Create TemplateModel.cs
+Set-Content -Path "MyClass.Api\Models\TemplateModel.cs" -Value @"
+namespace MyClass.Api.Models
+{
+    public class TemplateModel
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+    }
+}
+"@
+
+# Step 6: Create TemplateController.cs
+Set-Content -Path "MyClass.Api\Controllers\TemplateController.cs" -Value @"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MyClass.Api.Data;
+using MyClass.Api.Models;
+
+namespace MyClass.Api.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TemplateController : ControllerBase
+    {
+        private readonly ApplicationDbContext _context;
+
+        public TemplateController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TemplateModel>>> GetStudents()
+        {
+            return await _context.TemplateModels.ToListAsync();
+        }
+        [HttpPost]
+        public async Task<ActionResult<TemplateModel>> PostStudent(TemplateModel student)
+        {
+            _context.TemplateModels.Add(student);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(TemplateModel), new { id = student.Id }, student);
+        }
+
+    }
+}
+"@
+
+
+Set-Content -Path "MyClass.Tests\TemplateControllerTests.cs" -Value @"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MyClass.Api.Controllers;
+using MyClass.Api.Data;
+using MyClass.Api.Models;
+
+namespace MyClass.Tests
+{
+    public class TemplateControllerTests
+    {
+        private ApplicationDbContext GetInMemoryDbContext(string dbName)
+        {
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(dbName)
+                .Options;
+
+            return new ApplicationDbContext(options);
+        }
+
+        [Fact]
+        public async Task GetStudents_ReturnsAllItems()
+        {
+            // Arrange
+            var db = GetInMemoryDbContext("GetStudentsDb");
+            db.TemplateModels.AddRange(
+                new TemplateModel { Id = 1, Name = "One" },
+                new TemplateModel { Id = 2, Name = "Two" }
+            );
+            await db.SaveChangesAsync();
+
+            var controller = new TemplateController(db);
+
+            // Act
+            var result = await controller.GetStudents();
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<IEnumerable<TemplateModel>>>(result);
+            var list = Assert.IsType<List<TemplateModel>>(actionResult.Value);
+            Assert.Equal(2, list.Count);
+        }
+
+        [Fact]
+        public async Task PostStudent_AddsNewStudent()
+        {
+            // Arrange
+            var db = GetInMemoryDbContext("PostStudentDb");
+            var controller = new TemplateController(db);
+            var newStudent = new TemplateModel { Name = "New Student" };
+
+            // Act
+            var result = await controller.PostStudent(newStudent);
+
+            // Assert
+            var createdAt = Assert.IsType<CreatedAtActionResult>(result.Result);
+            var returnValue = Assert.IsType<TemplateModel>(createdAt.Value);
+            Assert.Equal("New Student", returnValue.Name);
+            Assert.Single(db.TemplateModels);
+        }
+    }
+}
+"@
+}
+
+
+function Remove-Branches {
+    $currentBranch = git branch --show-current
+    $branches = git branch | ForEach-Object { $_.Trim() }
+
+    foreach ($branch in $branches) {
+        if ($branch -eq "" -or $branch -eq $currentBranch -or $branch -eq "* $currentBranch") {
+            continue
+        }
+        git branch -D $branch
+        # To force delete, use: git branch -D $branch
+    }
+}
+function Remove-DockerImages-NewerThan {
+    param(
+        [Parameter(Mandatory)]
+        [int]$Hours
+    )
+
+    $cutoff = (Get-Date).AddHours(-$Hours)
+
+    Write-Host "Removing Docker images created after $cutoff" -ForegroundColor Yellow
+
+    docker images --format "{{.ID}}|{{.CreatedAt}}" |
+    ForEach-Object {
+
+        $parts = $_ -split "\|"
+        $imageId = $parts[0]
+        $rawDate = $parts[1]
+        $cleanDate = $rawDate -replace " [A-Z]{3,4}$", ""
+
+        try {
+            $created = [DateTimeOffset]::Parse($cleanDate).DateTime
+
+            if ($created -gt $cutoff) {
+                Write-Host "Removing $imageId  ($created)" -ForegroundColor Red
+                docker rmi -f $imageId
+            }
+        }
+        catch {
+            Write-Warning "Skipping image $imageId — invalid date: $rawDate"
+        }
+    }
+
+    Write-Host "Cleanup completed." -ForegroundColor Green
+}
+function Free-Port {
+    param(
+        [Parameter(Mandatory)]
+        [int]$Port
+    )
+
+    Write-Host "Checking port $Port..." -ForegroundColor Yellow
+
+    $connections = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
+
+    if (-not $connections) {
+        Write-Host "Port $Port is already free." -ForegroundColor Green
+        return
+    }
+
+    $pids = $connections | Select-Object -ExpandProperty OwningProcess -Unique
+
+    foreach ($pid in $pids) {
+        try {
+            $process = Get-Process -Id $pid -ErrorAction Stop
+            Write-Host "Killing process $($process.ProcessName) (PID $pid) using port $Port" -ForegroundColor Red
+            Stop-Process -Id $pid -Force
+        }
+        catch {
+            Write-Warning "Could not stop process with PID $pid"
+        }
+    }
+
+    Start-Sleep 1
+
+    if (Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue) {
+        Write-Warning "Port $Port is STILL in use. A system service may be holding it."
+    }
+    else {
+        Write-Host "Port $Port has been freed." -ForegroundColor Green
+    }
+}
+
+function Replace-FileFromOtherBranch
+{
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$FilePath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$TargetBranch
+  )
+  $FullPath = Resolve-Path $FilePath
+  $CurrentBranch = git rev-parse --abbrev-ref HEAD
+  $TempFile = Join-Path $env:TEMP ([IO.Path]::GetFileName($FullPath))
+  $UseStash = $null -ne (git status --porcelain)
+
+  if ($UseStash)
+  {
+    Write-Host "Stashing changes..."
+    git stash push -u -m "temp-stash-for-file-replace" | Out-Null
+  } else
+  {
+    Write-Host "No changes to stash."
+  }
+
+  Write-Host "Checking out $TargetBranch..."
+  git checkout $TargetBranch | Out-Null
+
+  Write-Host "Copying file from $TargetBranch..."
+  Copy-Item $FullPath $TempFile -Force
+
+  Write-Host "Checking out original branch $CurrentBranch..."
+  git checkout $CurrentBranch | Out-Null
+
+  if ($UseStash)
+  {
+    Write-Host "Restoring stashed changes..."
+    git stash pop | Out-Null
+  }
+
+  Write-Host "Overwriting file with version from $TargetBranch..."
+  Copy-Item $TempFile $FullPath -Force
+
+  Write-Host "Cleaning up temp file..."
+  Remove-Item $TempFile -Force
+
+  Write-Host "Done!"
+}
+function Move-StashToBranch {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TargetBranch
+    )
+
+    Write-Host "📦 Stashing current changes..." -ForegroundColor Cyan
+    $stashOutput = git stash -u -m "auto-stash before switching to $TargetBranch"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Failed to stash changes" -ForegroundColor Red
+        return
+    }
+
+    Write-Host "🔀 Switching to branch: $TargetBranch" -ForegroundColor Cyan
+    git checkout $TargetBranch
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Failed to switch branch" -ForegroundColor Red
+        return
+    }
+
+    if ($stashOutput -match "No local changes to save") {
+        Write-Host "ℹ️ No changes to apply" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "📥 Applying latest stash..." -ForegroundColor Cyan
+        git stash pop
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "⚠️ Stash applied with conflicts or errors" -ForegroundColor Yellow
+            return
+        }
+    }
+
+    Write-Host "✅ Done" -ForegroundColor Green
+}
+function Log-Message {
+    param (
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $color = switch ($Level) {
+        "INFO" { "Green" }
+        "WARN" { "Yellow" }
+        "ERROR" { "Red" }
+        Default { "White" }
+    }
+    Write-Host "[$timestamp] [$Level] $Message" -ForegroundColor $color
+}

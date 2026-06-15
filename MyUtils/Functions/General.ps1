@@ -14,6 +14,7 @@ function Sync-Folder {
 
     Copy-Item $source $TargetParent -Recurse
 }
+<<<<<<< HEAD
 
 function Sync-Module {
     param(
@@ -26,3 +27,28 @@ function Sync-Module {
 function Sync-MyUtils {
      Sync-Module -foldername "MyUtils"
 }
+=======
+#  whating file if there is changes sync
+# $source = "C:\SourceRepo"
+# $target = "C:\Backup"
+
+# $lastState = ""
+
+# while ($true) {
+
+#     $currentState = git -C $source status --porcelain | Out-String
+
+#     if ($currentState -ne $lastState) {
+
+#         Write-Host "Changes detected..."
+
+#         robocopy $source $target /MIR
+
+#         Write-Host "Sync completed"
+
+#         $lastState = $currentState
+#     }
+
+#     Start-Sleep 5
+# }
+>>>>>>> 9c785449320fecf6231a566fc97231183660b568

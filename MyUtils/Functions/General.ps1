@@ -14,7 +14,7 @@ function Sync-Folder {
 
     Copy-Item $source $TargetParent -Recurse
 }
-<<<<<<< HEAD
+
 
 function Sync-Module {
     param(
@@ -27,7 +27,7 @@ function Sync-Module {
 function Sync-MyUtils {
      Sync-Module -foldername "MyUtils"
 }
-=======
+
 #  whating file if there is changes sync
 # $source = "C:\SourceRepo"
 # $target = "C:\Backup"
@@ -51,4 +51,4 @@ function Sync-MyUtils {
 
 #     Start-Sleep 5
 # }
->>>>>>> 9c785449320fecf6231a566fc97231183660b568
+
